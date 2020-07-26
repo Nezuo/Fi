@@ -6,6 +6,10 @@
     "ServerScriptService": {
       "$className": "ServerScriptService",
 
+      "Example": {
+        "$path": "examples/Example.server.lua"
+      },
+
       "Fi": {
         "$path": "src"
       }
