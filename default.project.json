@@ -1,0 +1,14 @@
+{
+  "name": "Fi",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+
+      "Fi": {
+        "$path": "src"
+      }
+    }
+  }
+}
