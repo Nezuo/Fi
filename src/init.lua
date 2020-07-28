@@ -1,27 +1,57 @@
+--!strict
+
+--< Services >--
 local DataStoreService = game:GetService("DataStoreService")
-local Players = game:GetService("Players")
 
-local PlayerStore = DataStoreService:GetDataStore("PlayerData")
+--< Modules >--
+local Profile = require(script.Profile)
 
-local function GetData(player)
-    local Success,Result = pcall(PlayerStore.GetAsync, PlayerStore, "Player" .. player.UserId)
+--< Variables >--
+local Profiles = {}
 
-    if Success then
-        print("Success!")
-    else
-        error(Result)
+--< Functions >--
+local function SaveProfile(profile)
+    profile.ProfileStore.DataStore:UpdateAsync(profile.Key, function()
+        return profile.Data
+    end)
+end
+
+local function OnClose()
+    for _,profile in ipairs(Profiles) do
+        SaveProfile(profile)
     end
 end
 
-local function OnPlayerAdded(player)
-    GetData(player)
-end
+--< Classes >--
+local ProfileStore = {}
+ProfileStore.__index = ProfileStore
 
-local function OnPlayerRemoving(player)
+function ProfileStore.new(name: string): ProfileStore
+    local self = setmetatable({}, ProfileStore)
     
+    self.DataStore = DataStoreService:GetDataStore(name)
+    
+    return self
 end
 
-Players.PlayerAdded:Connect(OnPlayerAdded)
-Players.PlayerRemoving:Connect(OnPlayerRemoving)
+function ProfileStore:LoadProfileAsync(key: string)
+    local Data = self.DataStore:GetAsync(key) or {
+        Coins = 0;
+    }
+    local NewProfile = Profile.new(self, key, Data)
 
-return nil
+    table.insert(Profiles, NewProfile)
+
+    return NewProfile
+end
+
+--< Module >--
+local Fi = {}
+
+function Fi:GetProfileStore(name: string): ProfileStore
+    return ProfileStore.new(name)
+end
+
+game:BindToClose(OnClose)
+
+return Fi
