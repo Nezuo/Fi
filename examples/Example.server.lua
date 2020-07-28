@@ -5,8 +5,12 @@ local Fi = require(ServerScriptService.Fi)
 
 local PlayerProfiles = Fi:GetProfileStore("PlayerData")
 
+local Profiles = {}
+
 local function OnPlayerAdded(player)
     local Profile = PlayerProfiles:LoadProfileAsync("Player" .. player.UserId)
+
+    Profiles[player] = Profile
 
     while true do
         print(Profile.Data.Coins)
@@ -17,4 +21,10 @@ local function OnPlayerAdded(player)
     end
 end
 
+local function OnPlayerRemoving(player)
+    Profiles[player]:Save()
+    Profiles[player] = nil
+end
+
 Players.PlayerAdded:Connect(OnPlayerAdded)
+Players.PlayerRemoving:Connect(OnPlayerRemoving)

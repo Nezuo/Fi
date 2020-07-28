@@ -10,15 +10,9 @@ local Profile = require(script.Profile)
 local Profiles = {}
 
 --< Functions >--
-local function SaveProfile(profile)
-    profile.ProfileStore.DataStore:UpdateAsync(profile.Key, function()
-        return profile.Data
-    end)
-end
-
 local function OnClose()
     for _,profile in ipairs(Profiles) do
-        SaveProfile(profile)
+        profile:Save()
     end
 end
 
