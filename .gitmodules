@@ -1,0 +1,3 @@
+[submodule "dependencies/asink"]
+	path = dependencies/asink
+	url = https://github.com/LPGhatguy/asink

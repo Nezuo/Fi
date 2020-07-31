@@ -11,7 +11,11 @@
       },
 
       "Fi": {
-        "$path": "src"
+        "$path": "src",
+
+        "Asink": {
+          "$path": "dependencies/asink/src"
+        }
       }
     }
   }
