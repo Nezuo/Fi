@@ -13,7 +13,7 @@ local function OnPlayerAdded(player)
     Profiles[player] = Profile
 
     while true do
-        print(Profile.Data.Coins)
+        print(player.Name .. ": " .. Profile.Data.Coins)
 
         Profile.Data.Coins += 1
 
@@ -22,7 +22,7 @@ local function OnPlayerAdded(player)
 end
 
 local function OnPlayerRemoving(player)
-    Profiles[player]:Save()
+    Fi:SaveProfile(Profiles[player])
     Profiles[player] = nil
 end
 
