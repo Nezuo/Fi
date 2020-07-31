@@ -7,7 +7,7 @@ local Profile = require(script.Profile)
 
 --< Variables >--
 local ProfileStores = {}
-local ProfileFutures = {}
+local ProfileSaveFutures = {}
 
 --< Functions >--
 local function SaveProfile(profile)
@@ -30,6 +30,37 @@ local function SaveProfile(profile)
     return Future
 end
 
+local function LoadProfile(profileStore, key)
+    local Future, Resolve = Asink.Future.new()
+
+    Asink.Runtime.exec(function()
+        if ProfileStores[profileStore.Name][key] then
+            Resolve(Asink.Result.error("Profile of ProfileStore `" .. profileStore.Name .. "` with key `" .. key .. "` has already been loaded in this session."))
+        end
+
+        local Success, Response = pcall(function()
+            return profileStore.DataStore:UpdateAsync(key, function(data)
+                return data
+            end)
+        end)
+
+        if Success then
+            local Data = Response or {
+                Coins = 0;
+            }
+
+            local NewProfile = Profile.new(profileStore, key, Data)
+            ProfileStores[profileStore.Name][key] = NewProfile
+
+            Resolve(Asink.Result.ok(NewProfile))
+        else
+            Resolve(Asink.Result.error(Response))
+        end
+    end)
+
+    return Future
+end
+
 --< Classes >--
 local ProfileStore = {}
 ProfileStore.__index = ProfileStore
@@ -39,23 +70,26 @@ function ProfileStore.new(name)
     
     self.Name = name
     self.DataStore = DataStoreService:GetDataStore(name)
-    
+    self.ProfileLoadFutures = {}
+
     return self
 end
 
 function ProfileStore:LoadProfileAsync(key)
-    if ProfileStores[self.Name][key] then
-        error("Profile of ProfileStore `" .. self.Name .. "` with key `" .. key .. "` has already been loaded in this session.")
+    -- EDGE CASE: Prevents an error when a player rejoins the same server before their data is fully loaded
+    local ExistingFuture = self.ProfileLoadFutures[key]
+    if ExistingFuture then
+        return ExistingFuture
     end
 
-    local Data = self.DataStore:GetAsync(key) or {
-        Coins = 0;
-    }
+    local Future = LoadProfile(self, key)
+    Future:map(function()
+        self.ProfileLoadFutures[key] = nil
+    end)
 
-    local NewProfile = Profile.new(self, key, Data)
-    ProfileStores[self.Name][key] = NewProfile
+    self.ProfileLoadFutures[key] = Future
 
-    return NewProfile
+    return Future
 end
 
 --< Module >--
@@ -72,7 +106,7 @@ function Fi:GetProfileStore(name)
 end
 
 function Fi:SaveProfile(profile)
-    if ProfileFutures[profile] then
+    if ProfileSaveFutures[profile] then
         return
     end
 
@@ -84,10 +118,10 @@ function Fi:SaveProfile(profile)
             warn(Response)
         end
 
-        ProfileFutures[profile] = nil
+        ProfileSaveFutures[profile] = nil
     end)
 
-    ProfileFutures[profile] = Future
+    ProfileSaveFutures[profile] = Future
 
     return Future
 end
@@ -97,10 +131,10 @@ game:BindToClose(function()
 
     for _,profileStore in pairs(ProfileStores) do
         for _,profile in pairs(profileStore) do
-            if ProfileFutures[profile] then
-                table.insert(Futures, ProfileFutures[profile])
+            if ProfileSaveFutures[profile] then
+                table.insert(Futures, ProfileSaveFutures[profile])
             end
-    
+
             local Future = Fi:SaveProfile(profile)
     
             table.insert(Futures, Future)

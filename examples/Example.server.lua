@@ -8,22 +8,30 @@ local PlayerProfiles = Fi:GetProfileStore("PlayerData")
 local Profiles = {}
 
 local function OnPlayerAdded(player)
-    local Profile = PlayerProfiles:LoadProfileAsync("Player" .. player.UserId)
+    PlayerProfiles:LoadProfileAsync("Player" .. player.UserId):map(function(result)
+        local Success, Response = result:unpack()
 
-    Profiles[player] = Profile
+        if not Success then
+            warn(Response)
+        else
+            Profiles[player] = Response
 
-    while true do
-        print(player.Name .. ": " .. Profile.Data.Coins)
-
-        Profile.Data.Coins += 1
-
-        wait(1)
-    end
+            while true do
+                print(player.Name .. ": " .. Response.Data.Coins)
+        
+                Response.Data.Coins += 1
+        
+                wait(1)
+            end
+        end
+    end)
 end
 
 local function OnPlayerRemoving(player)
-    Fi:SaveProfile(Profiles[player])
-    Profiles[player] = nil
+    if Profiles[player] then
+        Fi:SaveProfile(Profiles[player])
+        Profiles[player] = nil
+    end
 end
 
 Players.PlayerAdded:Connect(OnPlayerAdded)
