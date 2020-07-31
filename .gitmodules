@@ -1,3 +1,6 @@
 [submodule "dependencies/asink"]
 	path = dependencies/asink
 	url = https://github.com/LPGhatguy/asink
+[submodule "dependencies/testez"]
+	path = dependencies/testez
+	url = https://github.com/Roblox/testez
