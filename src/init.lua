@@ -1,5 +1,3 @@
---!strict
-
 --< Services >--
 local DataStoreService = game:GetService("DataStoreService")
 
@@ -20,7 +18,7 @@ end
 local ProfileStore = {}
 ProfileStore.__index = ProfileStore
 
-function ProfileStore.new(name: string): ProfileStore
+function ProfileStore.new(name)
     local self = setmetatable({}, ProfileStore)
     
     self.DataStore = DataStoreService:GetDataStore(name)
@@ -28,7 +26,7 @@ function ProfileStore.new(name: string): ProfileStore
     return self
 end
 
-function ProfileStore:LoadProfileAsync(key: string)
+function ProfileStore:LoadProfileAsync(key)
     local Data = self.DataStore:GetAsync(key) or {
         Coins = 0;
     }
@@ -42,7 +40,7 @@ end
 --< Module >--
 local Fi = {}
 
-function Fi:GetProfileStore(name: string): ProfileStore
+function Fi:GetProfileStore(name)
     return ProfileStore.new(name)
 end
 
