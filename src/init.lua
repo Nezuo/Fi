@@ -6,7 +6,7 @@ local Asink = require(script.Asink)
 local Profile = require(script.Profile)
 
 --< Variables >--
-local Profiles = {}
+local ProfileStores = {}
 local ProfileFutures = {}
 
 --< Functions >--
@@ -37,18 +37,23 @@ ProfileStore.__index = ProfileStore
 function ProfileStore.new(name)
     local self = setmetatable({}, ProfileStore)
     
+    self.Name = name
     self.DataStore = DataStoreService:GetDataStore(name)
     
     return self
 end
 
 function ProfileStore:LoadProfileAsync(key)
+    if ProfileStores[self.Name][key] then
+        error("Profile of ProfileStore `" .. self.Name .. "` with key `" .. key .. "` has already been loaded in this session.")
+    end
+
     local Data = self.DataStore:GetAsync(key) or {
         Coins = 0;
     }
-    local NewProfile = Profile.new(self, key, Data)
 
-    table.insert(Profiles, NewProfile)
+    local NewProfile = Profile.new(self, key, Data)
+    ProfileStores[self.Name][key] = NewProfile
 
     return NewProfile
 end
@@ -57,6 +62,12 @@ end
 local Fi = {}
 
 function Fi:GetProfileStore(name)
+    if ProfileStores[name] then
+        error("ProfileStore `" .. name .. "` has already been loaded in this session.")
+    end
+
+    ProfileStores[name] = {}
+
     return ProfileStore.new(name)
 end
 
@@ -84,14 +95,16 @@ end
 game:BindToClose(function()
     local Futures = {}
 
-    for _,profile in ipairs(Profiles) do
-        if ProfileFutures[profile] then
-            table.insert(Futures, ProfileFutures[profile])
+    for _,profileStore in pairs(ProfileStores) do
+        for _,profile in pairs(profileStore) do
+            if ProfileFutures[profile] then
+                table.insert(Futures, ProfileFutures[profile])
+            end
+    
+            local Future = Fi:SaveProfile(profile)
+    
+            table.insert(Futures, Future)
         end
-
-        local Future = Fi:SaveProfile(profile)
-
-        table.insert(Futures, Future)
     end
 
     Asink.Future.all(Futures):await()
