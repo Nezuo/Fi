@@ -3,11 +3,19 @@
   "tree": {
     "$className": "DataModel",
 
-    "ServerScriptService": {
-      "$className": "ServerScriptService",
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": false
+      }
+    },
 
+    "ServerScriptService": {
       "Example": {
         "$path": "examples/Example.server.lua"
+      },
+
+      "TestEZ": {
+        "$path": "dependencies/testez/src"
       },
 
       "Fi": {
@@ -16,6 +24,18 @@
         "Asink": {
           "$path": "dependencies/asink/src"
         }
+      }
+    },
+
+    "TestService": {
+      "$className": "TestService",
+
+      "$properties": {
+        "ExecuteWithStudioRun": true
+      },
+
+      "TestRunner": {
+        "$path": "TestRunner.server.lua"
       }
     }
   }

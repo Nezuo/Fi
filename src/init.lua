@@ -1,22 +1,23 @@
---< Services >--
-local DataStoreService = game:GetService("DataStoreService")
-
 --< Modules >--
 local Asink = require(script.Asink)
-local Profile = require(script.Profile)
+local ProfileStore = require(script.ProfileStore)
 
 --< Variables >--
 local ProfileStores = {}
-local ProfileFutures = {}
+local SaveJobs = {}
+local ReleaseJobs = {}
 
 --< Functions >--
-local function SaveProfile(profile)
+local function SaveProfile(profile, release)
     local Future, Resolve = Asink.Future.new()
 
     Asink.Runtime.exec(function()
         local Success, Response = pcall(function()
             return profile.ProfileStore.DataStore:UpdateAsync(profile.Key, function()
-                return profile.Data
+                return {
+                    ActiveSession = not release and profile.ActiveSession;
+                    Data = profile.Data;
+                }
             end)
         end)
 
@@ -30,50 +31,69 @@ local function SaveProfile(profile)
     return Future
 end
 
---< Classes >--
-local ProfileStore = {}
-ProfileStore.__index = ProfileStore
-
-function ProfileStore.new(name)
-    local self = setmetatable({}, ProfileStore)
-    
-    self.Name = name
-    self.DataStore = DataStoreService:GetDataStore(name)
-    
-    return self
-end
-
-function ProfileStore:LoadProfileAsync(key)
-    if ProfileStores[self.Name][key] then
-        error("Profile of ProfileStore `" .. self.Name .. "` with key `" .. key .. "` has already been loaded in this session.")
+local function Release(profile)
+    if ReleaseJobs[profile] then
+        return ReleaseJobs[profile]
     end
 
-    local Data = self.DataStore:GetAsync(key) or {
-        Coins = 0;
-    }
+    local Profiles = ProfileStores[profile.ProfileStore.Name]
 
-    local NewProfile = Profile.new(self, key, Data)
-    ProfileStores[self.Name][key] = NewProfile
+    if Profiles[profile.Key] then
+        error("Profile `" .. profile.Key .. "` in ProfileStore `" .. profile.ProfileStore.Name .. "` has already been released.")
+    end
 
-    return NewProfile
+    local Future = SaveProfile(profile, true)
+    Future:map(function(result)
+        local Success, Response = result:unpack()
+
+        if not Success then
+            warn(Response)
+        end
+
+        Profiles[profile.Key] = nil
+        ReleaseJobs[profile] = nil
+    end)
+
+    ReleaseJobs[profile] = Future
+
+    return Future
+end
+
+local function OnClose()
+    local Futures = {}
+    for _,profileStore in pairs(ProfileStores) do
+        for _,profile in pairs(profileStore.Profiles) do
+            table.insert(Futures, Release(profile))
+        end
+    end
+
+    Asink.Future.all(Futures):await()
 end
 
 --< Module >--
 local Fi = {}
 
 function Fi:GetProfileStore(name)
+    if #name == 0 then
+        error("ProfileStore name cannot be an empty string.")
+    end
+
+    if #name > 50 then
+        error("ProfileStore name cannot be more than 50 characters." )
+    end
+
     if ProfileStores[name] then
         error("ProfileStore `" .. name .. "` has already been loaded in this session.")
     end
 
-    ProfileStores[name] = {}
+    ProfileStores[name] = ProfileStore.new(name)
 
-    return ProfileStore.new(name)
+    return ProfileStores[name]
 end
 
 function Fi:SaveProfile(profile)
-    if ProfileFutures[profile] then
-        return
+    if SaveJobs[profile] then
+        return SaveJobs[profile]
     end
 
     local Future = SaveProfile(profile)
@@ -84,30 +104,19 @@ function Fi:SaveProfile(profile)
             warn(Response)
         end
 
-        ProfileFutures[profile] = nil
+        SaveJobs[profile] = nil
     end)
 
-    ProfileFutures[profile] = Future
+    SaveJobs[profile] = Future
 
     return Future
 end
 
-game:BindToClose(function()
-    local Futures = {}
+function Fi:ReleaseProfile(profile)
+    return Release(profile)
+end
 
-    for _,profileStore in pairs(ProfileStores) do
-        for _,profile in pairs(profileStore) do
-            if ProfileFutures[profile] then
-                table.insert(Futures, ProfileFutures[profile])
-            end
-    
-            local Future = Fi:SaveProfile(profile)
-    
-            table.insert(Futures, Future)
-        end
-    end
-
-    Asink.Future.all(Futures):await()
-end)
+--< Initialize >--
+game:BindToClose(OnClose) -- TODO: Only do this if not using a mock data store!
 
 return Fi
