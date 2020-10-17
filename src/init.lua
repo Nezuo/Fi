@@ -15,7 +15,7 @@ local function SaveProfile(profile, release)
         local Success, Response = pcall(function()
             return profile.ProfileStore.DataStore:UpdateAsync(profile.Key, function()
                 return {
-                    ActiveSession = not release and profile.ActiveSession;
+                    ActiveSession = release and nil and profile.ActiveSession;
                     Data = profile.Data;
                 }
             end)
