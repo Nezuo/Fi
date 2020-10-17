@@ -9,13 +9,15 @@
       }
     },
 
+    "ReplicatedStorage": {
+      "TestEZ": {
+        "$path": "dependencies/testez/src"
+      }
+    },
+
     "ServerScriptService": {
       "Example": {
         "$path": "examples/Example.server.lua"
-      },
-
-      "TestEZ": {
-        "$path": "dependencies/testez/src"
       },
 
       "Fi": {
@@ -34,8 +36,8 @@
         "ExecuteWithStudioRun": true
       },
 
-      "TestRunner": {
-        "$path": "TestRunner.server.lua"
+      "TestBootstrap": {
+        "$path": "TestBootstrap.server.lua"
       }
     }
   }
