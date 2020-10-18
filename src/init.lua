@@ -40,17 +40,18 @@ function Fi:ReleaseProfile(profile)
     end
 
     local Future = Futures.ReleaseProfile(Profiles, profile)
+
+    self.ReleaseJobs[profile] = Future
+
     Future:map(function(result)
         local Success, Response = result:unpack()
 
         if not Success then
             warn(Response)
         end
-
+        
         self.ReleaseJobs[profile] = nil
     end)
-
-    self.ReleaseJobs[profile] = Future
 
     return Future
 end
@@ -61,6 +62,9 @@ function Fi:SaveProfile(profile)
     end
 
     local Future = Futures.SaveProfile(profile, false)
+
+    self.SaveJobs[profile] = Future
+    
     Future:map(function(result)
         local Success, Response = result:unpack()
 
@@ -70,8 +74,6 @@ function Fi:SaveProfile(profile)
 
         self.SaveJobs[profile] = nil
     end)
-
-    self.SaveJobs[profile] = Future
 
     return Future
 end

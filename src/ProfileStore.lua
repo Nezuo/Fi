@@ -104,16 +104,15 @@ end
 
 function ProfileStore:LoadProfile(key)
     -- EDGE CASE: Prevents an error when a player rejoins the same server before their data is fully loaded
-    local ExistingLoadJob = self.LoadJobs[key]
-    if ExistingLoadJob then
-        return ExistingLoadJob
+    if self.LoadJobs[key] ~= nil then
+        return self.LoadJobs[key]
     end
 
     if #key > 50 then
-        error("Profile key cannot be more than 50 characters." )
+        error("Profile key cannot be more than 50 characters.")
     end
 
-    if self.Profiles[key] then
+    if self.Profiles[key] ~= nil then
         error("Profile `" .. key .. "` has already been loaded in ProfileStore `" .. self.Name .. "` in this session.")
     end
 
@@ -122,6 +121,9 @@ function ProfileStore:LoadProfile(key)
     end
 
     local Future = LoadProfile(self, key)
+
+    self.LoadJobs[key] = Future
+
     Future:map(function(result)
         local Success, Response = result:unpack()
 
@@ -133,8 +135,6 @@ function ProfileStore:LoadProfile(key)
 
         self.LoadJobs[key] = nil
     end)
-
-    self.LoadJobs[key] = Future
 
     return Future
 end
