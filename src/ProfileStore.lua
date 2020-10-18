@@ -1,3 +1,6 @@
+--< Services >--
+local RunService = game:GetService("RunService")
+
 --< Modules >--
 local Asink = require(script.Parent.Asink)
 local Constants = require(script.Parent.Constants)
@@ -9,6 +12,17 @@ local LoadingLocked = false -- TODO: Add tests for this.
 --< Functions >--
 local function OnClose()
     LoadingLocked = true
+end
+
+local function Wait(dt)
+	dt = math.max(0, dt)
+	local left = dt
+
+	while left > 0 do
+		left = left - RunService.Heartbeat:Wait()
+	end
+
+	return dt - left
 end
 
 local function LoadProfileData(dataStore, key, transform)
@@ -56,7 +70,7 @@ local function LoadProfile(profileStore, key)
             end
 
             if os.clock() - Start < Constants.TIME_BEFORE_FORCE_STEAL and not LoadingLocked then
-                wait(Constants.LOAD_RETRY_DELAY)
+                Wait(Constants.LOAD_RETRY_DELAY)
             end
         until os.clock() - Start > Constants.TIME_BEFORE_FORCE_STEAL or LoadingLocked
 
