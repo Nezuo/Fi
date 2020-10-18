@@ -60,7 +60,7 @@ function Fi:SaveProfile(profile)
         return self.SaveJobs[profile]
     end
 
-    local Future = Futures.SaveProfile(profile)
+    local Future = Futures.SaveProfile(profile, false)
     Future:map(function(result)
         local Success, Response = result:unpack()
 
