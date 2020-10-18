@@ -1,9 +1,12 @@
 return function()
+    local Constants = require(script.Parent.Constants)
     local Fi = require(script.Parent)
-    local MockDataStoreConstants = require(script.Parent.MockDataStoreService.MockDataStoreService.MockDataStoreConstants)
-    local MockDataStoreManager = require(script.Parent.MockDataStoreService.MockDataStoreService.MockDataStoreManager)
-    local MockDataStoreService = require(script.Parent.MockDataStoreService.MockDataStoreService)
+    local MockDataStoreConstants = require(script.Parent.MockDataStoreService.MockDataStoreConstants)
+    local MockDataStoreManager = require(script.Parent.MockDataStoreService.MockDataStoreManager)
+    local MockDataStoreService = require(script.Parent.MockDataStoreService)
     local Profile = require(script.Parent.Profile)
+
+    Constants.USE_MOCK_DATA_STORE = true
 
     MockDataStoreConstants.BUDGETING_ENABLED = false
     MockDataStoreConstants.LOGGING_ENABLED = false

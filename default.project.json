@@ -24,7 +24,7 @@
         "$path": "src",
 
         "MockDataStoreService": {
-          "$path": "dependencies/mock-data-store-service/lib"
+          "$path": "dependencies/mock-data-store-service/lib/MockDataStoreService"
         },
 
         "Asink": {

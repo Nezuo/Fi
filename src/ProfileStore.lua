@@ -1,7 +1,6 @@
 --< Modules >--
 local Asink = require(script.Parent.Asink)
 local Constants = require(script.Parent.Constants)
-local DataStoreService = require(script.Parent.MockDataStoreService)
 local Profile = require(script.Parent.Profile)
 
 --< Variables >--
@@ -86,11 +85,14 @@ end
 
 --< Module >--
 local ProfileStore = {}
+ProfileStore.UseMockDataStore = false
 ProfileStore.__index = ProfileStore
 
 function ProfileStore.new(name)
     local self = setmetatable({}, ProfileStore)
     
+    local DataStoreService = ProfileStore.UseMockDataStore and require(script.Parent.MockDataStoreService) or game:GetService("DataStoreService")
+
     self.Name = name
     self.DataStore = DataStoreService:GetDataStore(name)
     self.Profiles = {}
@@ -136,6 +138,7 @@ function ProfileStore:LoadProfile(key)
     return Future
 end
 
+--< Initialize >--
 game:BindToClose(OnClose)
 
 return ProfileStore
