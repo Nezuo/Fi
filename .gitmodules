@@ -4,3 +4,6 @@
 [submodule "dependencies/testez"]
 	path = dependencies/testez
 	url = https://github.com/Roblox/testez
+[submodule "dependencies/mock-data-store-service"]
+	path = dependencies/mock-data-store-service
+	url = https://github.com/buildthomas/MockDataStoreService

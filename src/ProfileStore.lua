@@ -1,7 +1,5 @@
---< Services >--
-local DataStoreService = game:GetService("DataStoreService")
-
 --< Modules >--
+local DataStoreService = require(script.Parent.MockDataStoreService)
 local Asink = require(script.Parent.Asink)
 local Profile = require(script.Parent.Profile)
 
