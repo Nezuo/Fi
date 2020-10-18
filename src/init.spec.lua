@@ -10,6 +10,7 @@ return function()
     MockDataStoreConstants.YIELD_TIME_MAX = 0
     
     beforeEach(function()
+        MockDataStoreManager.ResetBudget()
         MockDataStoreManager.ResetData()
         Fi.ProfileStores = {}
         Fi.SaveJobs = {}
