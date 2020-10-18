@@ -1,14 +1,14 @@
 return function()
     local Fi = require(script.Parent)
-    local Profile = require(script.Parent.Profile)
-    local MockDataStoreService = require(script.Parent.MockDataStoreService.MockDataStoreService)
-    local MockDataStoreManager = require(script.Parent.MockDataStoreService.MockDataStoreService.MockDataStoreManager)
     local MockDataStoreConstants = require(script.Parent.MockDataStoreService.MockDataStoreService.MockDataStoreConstants)
+    local MockDataStoreManager = require(script.Parent.MockDataStoreService.MockDataStoreService.MockDataStoreManager)
+    local MockDataStoreService = require(script.Parent.MockDataStoreService.MockDataStoreService)
+    local Profile = require(script.Parent.Profile)
+
     MockDataStoreConstants.BUDGETING_ENABLED = false
     MockDataStoreConstants.LOGGING_ENABLED = false
     MockDataStoreConstants.WRITE_COOLDOWN = 0
-    MockDataStoreConstants.YIELD_TIME_MIN = 0.1
-    MockDataStoreConstants.YIELD_TIME_MAX = 0.2
+    MockDataStoreConstants.YIELD_TIME_MAX = 0
 
     -- TODO: Remove skips
 

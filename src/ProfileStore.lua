@@ -1,14 +1,11 @@
 --< Modules >--
-local DataStoreService = require(script.Parent.MockDataStoreService)
 local Asink = require(script.Parent.Asink)
+local Constants = require(script.Parent.Constants)
+local DataStoreService = require(script.Parent.MockDataStoreService)
 local Profile = require(script.Parent.Profile)
 
---< Constants >--
-local LOAD_RETRY_DELAY = 6
-local TIME_BEFORE_FORCE_STEAL = 60 -- Time before it steals a profile in seconds. TODO: Figure out how long this should be
-
 --< Variables >--
-local LoadingLocked = false
+local LoadingLocked = false -- TODO: Add tests for this.
 
 --< Functions >--
 local function OnClose()
@@ -24,10 +21,10 @@ end
 local function LoadProfile(profileStore, key)
     local Future, Resolve = Asink.Future.new()
 
-    local function Run()
+    Asink.Runtime.exec(function()
         local Start = os.clock()
-
-        while os.clock() - Start < TIME_BEFORE_FORCE_STEAL and not LoadingLocked do
+        
+        repeat
             local Success, Response = LoadProfileData(profileStore.DataStore, key, function(data)
                 if LoadingLocked then
                     return data
@@ -38,7 +35,7 @@ local function LoadProfile(profileStore, key)
                     Data = {};
                 }
 
-                if not data.ActiveSession then
+                if data.ActiveSession == nil then
                     data.ActiveSession = game.JobId
                 end
 
@@ -59,8 +56,10 @@ local function LoadProfile(profileStore, key)
                 break
             end
 
-            wait(LOAD_RETRY_DELAY)
-        end
+            if os.clock() - Start < Constants.TIME_BEFORE_FORCE_STEAL and not LoadingLocked then
+                wait(Constants.LOAD_RETRY_DELAY)
+            end
+        until os.clock() - Start > Constants.TIME_BEFORE_FORCE_STEAL or LoadingLocked
 
         if LoadingLocked then
             Resolve(Asink.Result.error("Profile `" .. key .. "` cannot be loading because the server is shutting down."))
@@ -68,7 +67,7 @@ local function LoadProfile(profileStore, key)
             return
         end
 
-        -- Steal the session lock
+        -- Steal the profile and session lock it.
         local Success, Response = LoadProfileData(profileStore.DataStore, key, function(data)
             data.ActiveSession = game.JobId
 
@@ -80,9 +79,7 @@ local function LoadProfile(profileStore, key)
         else
             Resolve(Asink.Result.error(Response))
         end
-    end
-    
-    Asink.Runtime.exec(Run)
+    end)
 
     return Future
 end
