@@ -1,5 +1,5 @@
 return function()
-    local MockDataStoreService = require(script.Parent.MockDataStoreService.MockDataStoreService)
+    local MockDataStoreService = require(script.Parent.MockDataStoreService)
     local ProfileStore = require(script.Parent.ProfileStore)
     local Constants = require(script.Parent.Constants)
 

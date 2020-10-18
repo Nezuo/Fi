@@ -1,5 +1,10 @@
+--< Services >--
+local DataStoreService = game:GetService("DataStoreService")
+local RunService = game:GetService("RunService")
+
 --< Modules >--
 local Asink = require(script.Asink)
+local Constants = require(script.Constants)
 local Futures = require(script.Futures)
 local ProfileStore = require(script.ProfileStore)
 
@@ -13,9 +18,7 @@ local Fi = {
 function Fi:GetProfileStore(name)
     if #name == 0 then
         error("ProfileStore name cannot be an empty string.")
-    end
-
-    if #name > 50 then
+    elseif #name > 50 then
         error("ProfileStore name cannot be more than 50 characters." )
     end
 
@@ -91,7 +94,29 @@ local function OnClose()
 end
 
 --< Initialize >--
-game:BindToClose(OnClose) -- TODO: Only do this if not using a mock data store!
+local UsingMockData = Constants.USE_MOCK_DATA_STORE
+if not UsingMockData then
+    if game.GameId == 0 then
+        -- In a local place file.
+        UsingMockData = true
+    elseif RunService:IsStudio() then
+        local Status, Message = pcall(function()
+            -- This will error if Studio does not have API Access.
+            DataStoreService:GetDataStore("__TEST"):SetAsync("__TEST", "__TEST_" .. os.time())
+        end)
+
+        if not Status and string.find(Message, "403", 1, true) then
+            UsingMockData = true
+        end
+    end
+end
+
+ProfileStore.UseMockDataStore = UsingMockData
+
+--< Initialize >--
+if not UsingMockData then
+    game:BindToClose(OnClose)
+end
 
 --< Module >--
 return Fi
