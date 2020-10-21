@@ -9,6 +9,7 @@ function Profile.new(profileStore, key, data)
     self.ActiveSession = data.ActiveSession
     self.Data = data.Data
     self.Key = key
+    self.LoadedTimestamp = nil
 
     return self
 end

@@ -6,9 +6,13 @@ local RunService = game:GetService("RunService")
 local Asink = require(script.Asink)
 local Constants = require(script.Constants)
 local Futures = require(script.Futures)
+local State = require(script.State)
 local ProfileStore = require(script.ProfileStore)
 
 --< Variables >--
+local UsingMockData = Constants.USE_MOCK_DATA_STORE
+
+--< Module >--
 local Fi = {
     ProfileStores = {};
     SaveJobs = {};
@@ -83,18 +87,21 @@ end
 
 --< Functions >--
 local function OnClose()
-    local CloseFutures = {}
-    for _,profileStore in pairs(Fi.ProfileStores) do
-        for _,profile in pairs(profileStore.Profiles) do
-            table.insert(CloseFutures, Futures.ReleaseProfile(Fi, profile))
-        end
-    end
+    State.LoadingLocked = true
 
-    Asink.Future.all(CloseFutures):await()
+    if not UsingMockData then
+        local CloseFutures = {}
+        for _,profileStore in pairs(Fi.ProfileStores) do
+            for _,profile in pairs(profileStore.Profiles) do
+                table.insert(CloseFutures, Futures.ReleaseProfile(Fi, profile))
+            end
+        end
+    
+        Asink.Future.all(CloseFutures):await()
+    end
 end
 
 --< Initialize >--
-local UsingMockData = Constants.USE_MOCK_DATA_STORE
 if not UsingMockData then
     if game.GameId == 0 then
         -- In a local place file.
@@ -111,12 +118,10 @@ if not UsingMockData then
     end
 end
 
-ProfileStore.UseMockDataStore = UsingMockData
+State.UseMockDataStore = UsingMockData
 
 --< Initialize >--
-if not UsingMockData then
-    game:BindToClose(OnClose)
-end
+game:BindToClose(OnClose)
 
 --< Module >--
 return Fi
