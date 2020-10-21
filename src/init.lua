@@ -4,16 +4,19 @@ local RunService = game:GetService("RunService")
 
 --< Modules >--
 local Asink = require(script.Asink)
+local AutoSave = require(script.AutoSave)
 local Constants = require(script.Constants)
 local Futures = require(script.Futures)
-local State = require(script.State)
 local ProfileStore = require(script.ProfileStore)
+local Queue = require(script.Queue)
+local State = require(script.State)
 
 --< Variables >--
 local UsingMockData = Constants.USE_MOCK_DATA_STORE
 
 --< Module >--
 local Fi = {
+    AutoSaveQueue = Queue.new();
     ProfileStores = {};
     SaveJobs = {};
     ReleaseJobs = {};
@@ -57,6 +60,8 @@ function Fi:ReleaseProfile(profile)
             warn(Response)
         end
         
+        self.AutoSaveQueue:Remove(profile)
+
         self.ReleaseJobs[profile] = nil
     end)
 
@@ -120,7 +125,8 @@ end
 
 State.UseMockDataStore = UsingMockData
 
---< Initialize >--
+AutoSave:Start()
+
 game:BindToClose(OnClose)
 
 --< Module >--

@@ -18,6 +18,16 @@ function Queue:Dequeue(index)
     return table.remove(self.Elements, index)
 end
 
+function Queue:Remove(target)
+    for index,element in ipairs(self.Elements) do
+        if element == target then
+            return self:Dequeue(index)
+        end
+    end
+
+    return nil
+end
+
 function Queue:Shift()
     local First = table.remove(self.Elements)
 
