@@ -5,6 +5,7 @@ local DataStoreService = game:GetService("DataStoreService")
 local MockDataStoreService = require(script.Parent.MockDataStoreService)
 local Futures = require(script.Parent.Futures)
 local State = require(script.Parent.State)
+local AutoSave = require(script.Parent.AutoSave)
 
 --< Module >--
 local ProfileStore = {}
@@ -52,15 +53,15 @@ function ProfileStore:LoadProfile(key)
             Response.LoadedTimestamp = os.clock()
             
             self.Profiles[key] = Response
+
+            AutoSave:AddProfileToQueue(Response)
         else
             warn(Response)
         end
 
         self.LoadJobs[key] = nil
     end)
-
-    -- TODO: Add profile to auto save queue? Auto saving logic might need its own module to avoid circular dependencies
-
+    
     return Future
 end
 
