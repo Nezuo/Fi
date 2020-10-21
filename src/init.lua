@@ -125,7 +125,7 @@ end
 
 State.UseMockDataStore = UsingMockData
 
-AutoSave:Start()
+AutoSave:Start(Fi)
 
 game:BindToClose(OnClose)
 

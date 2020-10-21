@@ -31,8 +31,8 @@ end
 --< Module >--
 local AutoSave = {}
 
-function AutoSave:Start()
-    Fi = require(script.Parent)
+function AutoSave:Start(fi)
+    Fi = fi
 
     RunService.Heartbeat:Connect(OnHeartbeat)
 end
