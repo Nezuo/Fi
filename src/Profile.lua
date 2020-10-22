@@ -1,9 +1,8 @@
 --< Module >--
 local Profile = {}
-Profile.__index = Profile
 
 function Profile.new(profileStore, key, data)
-    local self = setmetatable({}, Profile)
+    local self = {}
     
     self.ProfileStore = profileStore
     self.ActiveSession = data.ActiveSession

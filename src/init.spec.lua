@@ -1,12 +1,15 @@
 return function()
     local Constants = require(script.Parent.Constants)
+
+    Constants.CAN_AUTO_SAVE = false
+    Constants.USE_MOCK_DATA_STORE = true
+
     local Fi = require(script.Parent)
     local MockDataStoreConstants = require(script.Parent.MockDataStoreService.MockDataStoreConstants)
     local MockDataStoreManager = require(script.Parent.MockDataStoreService.MockDataStoreManager)
     local MockDataStoreService = require(script.Parent.MockDataStoreService)
     local Profile = require(script.Parent.Profile)
-
-    Constants.USE_MOCK_DATA_STORE = true
+    local Queue = require(script.Parent.Queue)
 
     MockDataStoreConstants.BUDGETING_ENABLED = false
     MockDataStoreConstants.LOGGING_ENABLED = false
@@ -19,6 +22,7 @@ return function()
         MockDataStoreManager.ResetBudget()
         MockDataStoreManager.ResetData()
 
+        Fi.AutoSaveQueue = Queue.new()
         Fi.ProfileStores = {}
         Fi.SaveJobs = {}
         Fi.ReleaseJobs = {}

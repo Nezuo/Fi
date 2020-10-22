@@ -8,33 +8,44 @@ local Fi = nil
 --< Variables >--
 local LastAutoSave = os.clock()
 
---< Functions >--
-local function OnHeartbeat()
-    if not Fi.AutoSaveQueue:IsEmpty() then
+--< Module >--
+local AutoSave = {}
+
+function AutoSave:Update(clock, updateLastAutoSave)
+    local SavedProfile = nil
+
+    if Constants.AUTO_SAVE_INTERVAL > 0 and not Fi.AutoSaveQueue:IsEmpty() then
         local AutoSaveInterval = Constants.AUTO_SAVE_INTERVAL / Fi.AutoSaveQueue:Length()
 
-        if os.clock() - LastAutoSave > AutoSaveInterval then
+        if clock - LastAutoSave >= AutoSaveInterval then
             local Profile = Fi.AutoSaveQueue:Peek()
 
             -- Save the profile if it has been loaded longer than the auto save interval.
-            if os.clock() - Profile.LoadedTimestamp > Constants.AUTO_SAVE_INTERVAL then
+            if clock - Profile.LoadedTimestamp >= Constants.AUTO_SAVE_INTERVAL then
                 Fi:SaveProfile(Profile)
+
+                SavedProfile = Profile
             end
 
-            LastAutoSave = os.clock()
+            if updateLastAutoSave then
+                LastAutoSave = clock
+            end
 
             Fi.AutoSaveQueue:Shift()
         end
     end
-end
 
---< Module >--
-local AutoSave = {}
+    return SavedProfile
+end
 
 function AutoSave:Start(fi)
     Fi = fi
 
-    RunService.Heartbeat:Connect(OnHeartbeat)
+    if Constants.CAN_AUTO_SAVE then
+        RunService.Heartbeat:Connect(function()
+            self:Update(os.clock(), true)
+        end)
+    end
 end
 
 function AutoSave:AddProfileToQueue(profile)

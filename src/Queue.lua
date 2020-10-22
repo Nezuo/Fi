@@ -29,7 +29,7 @@ function Queue:Remove(target)
 end
 
 function Queue:Shift()
-    local First = table.remove(self.Elements)
+    local First = table.remove(self.Elements, 1)
 
     table.insert(self.Elements, First)
 end
