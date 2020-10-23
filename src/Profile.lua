@@ -1,7 +1,7 @@
 --< Module >--
 local Profile = {}
 
-function Profile.new(profileStore, key, data)
+function Profile.new(profileStore, key, data, stolenMessage)
     local self = {}
     
     self.ProfileStore = profileStore
@@ -10,6 +10,7 @@ function Profile.new(profileStore, key, data)
     self.Data = data.Data
     self.Key = key
     self.LoadedTimestamp = nil
+    self.StolenMessage = stolenMessage
 
     return self
 end

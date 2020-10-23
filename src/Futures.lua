@@ -33,6 +33,8 @@ local function LoadProfile(profileStore, key)
         local Start = os.clock()
         
         repeat
+            local StolenMessage = nil
+
             local Success, Response = LoadProfileData(profileStore.DataStore, key, function(data)
                 if State.LoadingLocked then
                     return data
@@ -40,7 +42,14 @@ local function LoadProfile(profileStore, key)
 
                 data = data or GetDefaultData()
 
-                if data.ActiveSession == nil or (data.ActiveSession ~= game.JobId and os.time() - data.Metadata.LastUpdate >= Constants.ASSUME_DEAD_SESSION_LOCK) then
+                if data.ActiveSession == nil  then
+                    data.ActiveSession = game.JobId
+                    data.Metadata.LastUpdate = os.time()
+                end
+
+                if data.ActiveSession ~= game.JobId and os.time() - data.Metadata.LastUpdate >= Constants.ASSUME_DEAD_SESSION_LOCK then
+                    StolenMessage = "DeadSession"
+
                     data.ActiveSession = game.JobId
                     data.Metadata.LastUpdate = os.time()
                 end
@@ -57,9 +66,9 @@ local function LoadProfile(profileStore, key)
             end
 
             if Success and Response.ActiveSession == game.JobId then
-                Resolve(Asink.Result.ok(Profile.new(profileStore, key, Response)))
+                Resolve(Asink.Result.ok(Profile.new(profileStore, key, Response, StolenMessage)))
 
-                break
+                return
             end
 
             if os.clock() - Start < Constants.TIME_BEFORE_FORCE_STEAL and not State.LoadingLocked then
@@ -81,7 +90,7 @@ local function LoadProfile(profileStore, key)
         end)
 
         if Success then
-            Resolve(Asink.Result.ok(Profile.new(profileStore, key, Response)))
+            Resolve(Asink.Result.ok(Profile.new(profileStore, key, Response, "ForceSteal")))
         else
             Resolve(Asink.Result.error(Response))
         end
