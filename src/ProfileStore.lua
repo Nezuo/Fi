@@ -39,7 +39,7 @@ function ProfileStore:LoadProfile(key)
     end
 
     if State.LoadingLocked then
-        error("Profile `" .. key .. "` cannot be loaded because the server is shutting down.")
+        error("Profile `" .. key .. "` cannot load because the server is shutting down.")
     end
 
     local Future = Futures.LoadProfile(self, key)

@@ -3,8 +3,13 @@ return function()
     local GetDefaultData = require(script.Parent.GetDefaultData)
     local MockDataStoreService = require(script.Parent.MockDataStoreService)
     local ProfileStore = require(script.Parent.ProfileStore)
+    local State = require(script.Parent.State)
 
     Constants.TIME_BEFORE_FORCE_STEAL = 0
+
+    beforeEach(function()
+        State.LoadingLocked = false
+    end)
 
     describe("LoadProfile", function()
         itSKIP("should return same load job", function()
@@ -79,6 +84,16 @@ return function()
 
             expect(Profile.ActiveSession).to.equal(game.JobId)
             expect(Profile.StolenMessage).to.equal("DeadSession")
+        end)
+
+        it("should throw when loading is locked", function()
+            State.LoadingLocked = true
+
+            local Store = ProfileStore.new("Store")
+
+            expect(function()
+                Store:LoadProfile("Profile")
+            end).to.throw("Profile `Profile` cannot load because the server is shutting down.")
         end)
 
         it("should throw when loading a profile twice", function()

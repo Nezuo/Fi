@@ -77,7 +77,7 @@ local function LoadProfile(profileStore, key)
         until os.clock() - Start > Constants.TIME_BEFORE_FORCE_STEAL or State.LoadingLocked
 
         if State.LoadingLocked then
-            Resolve(Asink.Result.error("Profile `" .. key .. "` cannot be loading because the server is shutting down."))
+            Resolve(Asink.Result.error("Profile `" .. key .. "` cannot load because the server is shutting down."))
 
             return
         end
