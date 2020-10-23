@@ -6,6 +6,7 @@ local Asink = require(script.Parent.Asink)
 local State = require(script.Parent.State)
 local Constants = require(script.Parent.Constants)
 local Profile = require(script.Parent.Profile)
+local GetDefaultData = require(script.Parent.GetDefaultData)
 
 --< Functions >--
 local function Wait(dt)
@@ -37,13 +38,11 @@ local function LoadProfile(profileStore, key)
                     return data
                 end
 
-                data = data or {
-                    ActiveSession = nil;
-                    Data = {};
-                }
+                data = data or GetDefaultData()
 
-                if data.ActiveSession == nil then
+                if data.ActiveSession == nil or (data.ActiveSession ~= game.JobId and os.time() - data.Metadata.LastUpdate >= Constants.ASSUME_DEAD_SESSION_LOCK) then
                     data.ActiveSession = game.JobId
+                    data.Metadata.LastUpdate = os.time()
                 end
 
                 return data
@@ -97,9 +96,14 @@ local function SaveProfile(profile, release)
     Asink.Runtime.exec(function()
         local Success, Response = pcall(function()
             return profile.ProfileStore.DataStore:UpdateAsync(profile.Key, function()
+                local Metadata = profile.Metadata
+
+                Metadata.LastUpdate = os.time()
+                
                 return {
                     ActiveSession = not release and profile.ActiveSession or nil;
                     Data = profile.Data;
+                    Metadata = Metadata;
                 }
             end)
         end)

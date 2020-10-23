@@ -5,6 +5,7 @@ return function()
     Constants.USE_MOCK_DATA_STORE = true
 
     local Fi = require(script.Parent)
+    local GetDefaultData = require(script.Parent.GetDefaultData)
     local MockDataStoreConstants = require(script.Parent.MockDataStoreService.MockDataStoreConstants)
     local MockDataStoreManager = require(script.Parent.MockDataStoreService.MockDataStoreManager)
     local MockDataStoreService = require(script.Parent.MockDataStoreService)
@@ -60,11 +61,11 @@ return function()
         describe("ReleaseProfile", function()
             it("should release profile", function()
                 local Store = Fi:GetProfileStore("Store")
-                local MyProfile = Profile.new(Store, "Profile", { ActiveSession = "TestSession" })
+                local MyProfile = Profile.new(Store, "Profile", GetDefaultData("TestSession"))
                 Store.Profiles[MyProfile.Key] = MyProfile -- Add to profiles because it isn't released.
     
                 MockDataStoreService:GetDataStore("Store"):UpdateAsync("Profile", function()
-                    return { ActiveSession = MyProfile.ActiveSession }
+                    return GetDefaultData(MyProfile.ActiveSession)
                 end)
     
                 expect(MockDataStoreService:GetDataStore("Store").__data.Profile.ActiveSession).to.equal("TestSession")
@@ -76,7 +77,7 @@ return function()
     
             it("should throw when already released", function()
                 local Store = Fi:GetProfileStore("Store")
-                local MyProfile = Profile.new(Store, "Profile", { ActiveSession = "TestSession" })
+                local MyProfile = Profile.new(Store, "Profile", GetDefaultData("TestSession"))
     
                 expect(function()
                     Fi:ReleaseProfile(MyProfile)
@@ -85,7 +86,7 @@ return function()
     
             itSKIP("should return same release job", function()
                 local Store = Fi:GetProfileStore("Store")
-                local MyProfile = Profile.new(Store, "Profile", { ActiveSession = "TestSession" })
+                local MyProfile = Profile.new(Store, "Profile", GetDefaultData("TestSession"))
                 Store.Profiles[MyProfile.Key] = MyProfile -- Add to profiles because it isn't released.
     
                 expect(Fi:ReleaseProfile(MyProfile)).to.equal(Fi:ReleaseProfile(MyProfile))
@@ -95,20 +96,21 @@ return function()
         describe("SaveProfile", function()
             it("should save profile", function()
                 local Store = Fi:GetProfileStore("Store")
-                local MyProfile = Profile.new(Store, "Profile", {
-                    ActiveSession = "TestSession";
-                    Data = 5;
-                })
+
+                local Data = GetDefaultData("TestSession")
+                Data.Data = "Data"
+
+                local MyProfile = Profile.new(Store, "Profile", Data)
     
                 Fi:SaveProfile(MyProfile):await()
     
                 expect(MockDataStoreService:GetDataStore("Store").__data.Profile.ActiveSession).to.equal("TestSession")
-                expect(MockDataStoreService:GetDataStore("Store").__data.Profile.Data).to.equal(5)
+                expect(MockDataStoreService:GetDataStore("Store").__data.Profile.Data).to.equal("Data")
             end)
     
             itSKIP("should return same save job", function()
                 local Store = Fi:GetProfileStore("Store")
-                local MyProfile = Profile.new(Store, "Profile", {})
+                local MyProfile = Profile.new(Store, "Profile", GetDefaultData())
     
                 expect(Fi:SaveProfile(MyProfile)).to.equal(Fi:SaveProfile(MyProfile))
             end)

@@ -1,7 +1,8 @@
 return function()
+    local Constants = require(script.Parent.Constants)
+    local GetDefaultData = require(script.Parent.GetDefaultData)
     local MockDataStoreService = require(script.Parent.MockDataStoreService)
     local ProfileStore = require(script.Parent.ProfileStore)
-    local Constants = require(script.Parent.Constants)
 
     Constants.TIME_BEFORE_FORCE_STEAL = 0
 
@@ -35,7 +36,10 @@ return function()
             local Store = ProfileStore.new("Store")
 
             MockDataStoreService:GetDataStore("Store"):UpdateAsync("Profile", function()
-                return { Data = "Data" }
+                local Data = GetDefaultData()
+                Data.Data = "Data"
+
+                return Data
             end)
 
             local Profile = Store:LoadProfile("Profile"):await():unwrapOrDie("Failed to load profile.")
@@ -48,7 +52,10 @@ return function()
             local Store = ProfileStore.new("Store")
 
             MockDataStoreService:GetDataStore("Store"):UpdateAsync("Profile", function()
-                return { ActiveSession = "TestSession", Data = "Data" }
+                local Data = GetDefaultData("TestSession")
+                Data.Data = "Data"
+
+                return Data
             end)
 
             local Profile = Store:LoadProfile("Profile"):await():unwrapOrDie("Failed to load profile.")
